@@ -16,7 +16,7 @@ app.use(helmet());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000,
+  windowMs: process.env.RATE_LIMIT_WINDOW_MS || 2 * 60 * 1000,
   max: process.env.RATE_LIMIT_MAX_REQUESTS || 100
 });
 app.use('/api/', limiter);
