@@ -148,7 +148,7 @@ function App() {
         <div className="p-8">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold text-gray-800">
-              Todo App v2.0 - CI/CD Test
+              Todo App v2.0
             </h1>
             <div className="flex gap-2">
               <button
