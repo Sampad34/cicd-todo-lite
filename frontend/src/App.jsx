@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 // Vite uses import.meta.env instead of process.env
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 function App() {
   const [todos, setTodos] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [error, setError] = useState('');
+  const [inputValue, setInputValue] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
@@ -18,20 +18,22 @@ function App() {
     // Define fetchTodos inside useEffect
     const fetchTodos = async () => {
       if (!isMounted) return;
-      
+
       try {
         const response = await axios.get(`${API_URL}/todos`);
         if (isMounted) {
           setTodos(response.data);
-          setError('');
+          setError("");
         }
       } catch (error) {
-        console.error('Error fetching todos:', error);
+        console.error("Error fetching todos:", error);
         if (isMounted) {
-          if (error.code === 'ERR_NETWORK') {
-            setError('Cannot connect to backend. Please make sure the backend server is running on port 5000');
+          if (error.code === "ERR_NETWORK") {
+            setError(
+              "Cannot connect to backend. Please make sure the backend server is running on port 5000",
+            );
           } else {
-            setError(error.response?.data?.error || 'Failed to load todos');
+            setError(error.response?.data?.error || "Failed to load todos");
           }
         }
       }
@@ -60,19 +62,19 @@ function App() {
     const trimmedValue = inputValue.trim();
     if (!trimmedValue) return;
 
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       await axios.post(`${API_URL}/todos`, { title: trimmedValue });
-      setInputValue('');
-      
+      setInputValue("");
+
       // Fetch updated todos
       const response = await axios.get(`${API_URL}/todos`);
       setTodos(response.data);
     } catch (error) {
-      console.error('Error adding todo:', error);
-      setError(error.response?.data?.error || 'Failed to add todo');
+      console.error("Error adding todo:", error);
+      setError(error.response?.data?.error || "Failed to add todo");
     } finally {
       setLoading(false);
     }
@@ -80,47 +82,49 @@ function App() {
 
   const toggleTodo = async (id, currentStatus) => {
     const newStatus = currentStatus === 1 ? 0 : 1;
-    
+
     // Optimistic update for better UX
     const originalTodos = [...todos];
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, completed: newStatus } : todo
-    ));
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, completed: newStatus } : todo,
+      ),
+    );
 
     try {
       await axios.put(`${API_URL}/todos/${id}`, { completed: newStatus });
-      
+
       // Sync with server
       const response = await axios.get(`${API_URL}/todos`);
       setTodos(response.data);
     } catch (error) {
       // Revert on error
       setTodos(originalTodos);
-      console.error('Error updating todo:', error);
-      setError(error.response?.data?.error || 'Failed to update todo');
+      console.error("Error updating todo:", error);
+      setError(error.response?.data?.error || "Failed to update todo");
     }
   };
 
   const deleteTodo = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this todo?')) {
+    if (!window.confirm("Are you sure you want to delete this todo?")) {
       return;
     }
 
     // Optimistic update
     const originalTodos = [...todos];
-    setTodos(todos.filter(todo => todo.id !== id));
+    setTodos(todos.filter((todo) => todo.id !== id));
 
     try {
       await axios.delete(`${API_URL}/todos/${id}`);
-      
+
       // Sync with server
       const response = await axios.get(`${API_URL}/todos`);
       setTodos(response.data);
     } catch (error) {
       // Revert on error
       setTodos(originalTodos);
-      console.error('Error deleting todo:', error);
-      setError(error.response?.data?.error || 'Failed to delete todo');
+      console.error("Error deleting todo:", error);
+      setError(error.response?.data?.error || "Failed to delete todo");
     }
   };
 
@@ -129,10 +133,10 @@ function App() {
     try {
       const response = await axios.get(`${API_URL}/todos`);
       setTodos(response.data);
-      setError('');
+      setError("");
     } catch (error) {
-      console.error('Error fetching todos:', error);
-      setError('Failed to load todos');
+      console.error("Error fetching todos:", error);
+      setError("Failed to load todos");
     } finally {
       setLoading(false);
     }
@@ -143,15 +147,19 @@ function App() {
       <div className="max-w-md mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
         <div className="p-8">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-800">Todo App</h1>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Todo App v2.0 - CI/CD Test
+            </h1>
             <div className="flex gap-2">
               <button
                 onClick={() => setAutoRefresh(!autoRefresh)}
                 className={`px-2 py-1 text-xs rounded-lg transition-colors ${
-                  autoRefresh ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'
+                  autoRefresh
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-300 text-gray-700"
                 }`}
               >
-                {autoRefresh ? 'Live Sync ON' : 'Live Sync OFF'}
+                {autoRefresh ? "Live Sync ON" : "Live Sync OFF"}
               </button>
               <button
                 onClick={refreshTodos}
@@ -159,7 +167,7 @@ function App() {
                 className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Manual refresh - useful when auto-sync is off or to see external changes"
               >
-                {loading ? '⟳' : '🔄'} Sync Now
+                {loading ? "⟳" : "🔄"} Sync Now
               </button>
             </div>
           </div>
@@ -171,7 +179,8 @@ function App() {
           )}
 
           <div className="mb-2 text-xs text-gray-500 text-right">
-            💡 Changes from UI are instant | External changes appear within 10 seconds
+            💡 Changes from UI are instant | External changes appear within 10
+            seconds
           </div>
 
           {error && (
@@ -207,38 +216,40 @@ function App() {
           </form>
 
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {todos.length > 0 ? (
-              todos.map((todo) => (
-                <div
-                  key={todo.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    <input
-                      type="checkbox"
-                      checked={todo.completed === 1}
-                      onChange={() => toggleTodo(todo.id, todo.completed)}
-                      disabled={loading}
-                      className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 disabled:opacity-50"
-                    />
-                    <span className={`${todo.completed === 1 ? 'line-through text-gray-400' : 'text-gray-700'} flex-1 break-words`}>
-                      {todo.title}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => deleteTodo(todo.id)}
-                    disabled={loading}
-                    className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-2"
+            {todos.length > 0
+              ? todos.map((todo) => (
+                  <div
+                    key={todo.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    Delete
-                  </button>
-                </div>
-              ))
-            ) : (
-              !loading && (
-                <p className="text-center text-gray-500 py-4">No todos yet. Add one above!</p>
-              )
-            )}
+                    <div className="flex items-center gap-3 flex-1">
+                      <input
+                        type="checkbox"
+                        checked={todo.completed === 1}
+                        onChange={() => toggleTodo(todo.id, todo.completed)}
+                        disabled={loading}
+                        className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 disabled:opacity-50"
+                      />
+                      <span
+                        className={`${todo.completed === 1 ? "line-through text-gray-400" : "text-gray-700"} flex-1 break-words`}
+                      >
+                        {todo.title}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => deleteTodo(todo.id)}
+                      disabled={loading}
+                      className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-2"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))
+              : !loading && (
+                  <p className="text-center text-gray-500 py-4">
+                    No todos yet. Add one above!
+                  </p>
+                )}
           </div>
         </div>
       </div>
