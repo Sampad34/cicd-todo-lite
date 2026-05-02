@@ -11,13 +11,19 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+// Trust proxy - fixes the X-Forwarded-For warning
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 
-// Rate limiting
+// Rate limiting - 2 minute window
 const limiter = rateLimit({
-  windowMs: process.env.RATE_LIMIT_WINDOW_MS || 2 * 60 * 1000,
-  max: process.env.RATE_LIMIT_MAX_REQUESTS || 100
+  windowMs: 2 * 60 * 1000, // 2 minutes
+  max: process.env.RATE_LIMIT_MAX_REQUESTS || 100, // 100 requests per 2 minutes
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 app.use('/api/', limiter);
 
@@ -60,13 +66,15 @@ const validateTodo = (req, res, next) => {
   next();
 };
 
-// Data file path
-const DATA_FILE = path.join(__dirname, process.env.DATA_DIR || 'data', 'todos.json');
-const dataDir = path.join(__dirname, process.env.DATA_DIR || 'data');
+// Data file path - Fixed absolute path handling
+const dataDirName = process.env.DATA_DIR || 'data';
+const DATA_FILE = path.resolve(__dirname, dataDirName, 'todos.json');
+const dataDir = path.resolve(__dirname, dataDirName);
 
 // Ensure data directory exists
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
+  console.log(`Created data directory: ${dataDir}`);
 }
 
 // Initialize data file
@@ -81,7 +89,9 @@ const initializeDataFile = () => {
         nextId: 3
       };
       fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2));
-      console.log('Created todos.json with sample data');
+      console.log('Created todos.json with sample data at:', DATA_FILE);
+    } else {
+      console.log('Data file already exists at:', DATA_FILE);
     }
   } catch (error) {
     console.error('Error initializing data file:', error);
@@ -91,7 +101,7 @@ const initializeDataFile = () => {
 
 initializeDataFile();
 
-// Helper functions
+// Helper functions with better error handling
 const readData = () => {
   try {
     const data = fs.readFileSync(DATA_FILE, 'utf8');
@@ -202,6 +212,16 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Root endpoint for testing
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Todo API is running',
+    version: '1.0.0',
+    endpoints: ['/api/todos', '/health'],
+    rate_limit: '100 requests per 2 minutes'
+  });
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
@@ -219,4 +239,16 @@ app.listen(PORT, () => {
   console.log(`✅ Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   console.log(`✅ API endpoints available at http://localhost:${PORT}/api`);
   console.log(`✅ Data stored in: ${DATA_FILE}`);
+  console.log(`✅ Rate limit: 100 requests per 2 minutes`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  process.exit(0);
 });
