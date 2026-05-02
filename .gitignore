@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+# Build outputs
+dist/
+build/
+*.db
+*.sqlite
+*.sqlite3
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+# Coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
+# Data files
+backend/data/
+*.json
+!package.json
+!package-lock.json
+
+# Environment
+.env.*
+!.env.example
